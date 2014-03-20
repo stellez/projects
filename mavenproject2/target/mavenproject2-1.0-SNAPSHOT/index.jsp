@@ -22,8 +22,6 @@
         Display Images
         <form method="POST" action="ViewFiles">
             <input type="submit" value="Files">
-        </form><br>
-
     </body>
 </html>
 

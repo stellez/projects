@@ -77,6 +77,7 @@ public class ViewFiles extends HttpServlet{
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
+     * @throws javax.jcr.RepositoryException if a repository error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, RepositoryException {
@@ -116,7 +117,9 @@ public class ViewFiles extends HttpServlet{
                     String encodedString = new String(encoded);                      
                     out.println("<center> <br><img src=\"data:image/jpeg;base64,"+ encodedString +"\" style='max-width: 300px; max-height: 300px' WIDTH=20% HEIGHT=20% /></center> ");
                 }
-            }catch(Exception e){
+            }catch(IOException e){
+                System.out.println("Exception: "+ e);
+            } catch (RepositoryException e) {
                 System.out.println("Exception: "+ e);
             }           
             out.println("</body>");
