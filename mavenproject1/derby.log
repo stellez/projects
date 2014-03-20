@@ -1,0 +1,30 @@
+----------------------------------------------------------------
+2014-03-17 14:36:41.017 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.5.3.0 - (802917): instance a816c00e-0144-d079-17ff-000005ceb708
+on database directory /home/xumakgt1/Projects/mavenproject1/repository/version/db  
+
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+2014-03-17 14:36:41.710 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.5.3.0 - (802917): instance 888c4022-0144-d079-17ff-000005ceb708
+on database directory /home/xumakgt1/Projects/mavenproject1/repository/workspaces/default/db  
+
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+2014-03-17 14:36:42.612 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.5.3.0 - (802917): instance e1734037-0144-d079-17ff-000005ceb708
+on database directory /home/xumakgt1/Projects/mavenproject1/repository/workspaces/security/db  
+
+Database Class Loader started - derby.database.classpath=''
+
+2014-03-17 14:36:43.263 GMT:
+Shutting down instance 888c4022-0144-d079-17ff-000005ceb708
+----------------------------------------------------------------
+
+2014-03-17 14:36:43.372 GMT:
+Shutting down instance e1734037-0144-d079-17ff-000005ceb708
+----------------------------------------------------------------
+
+2014-03-17 14:36:43.450 GMT:
+Shutting down instance a816c00e-0144-d079-17ff-000005ceb708
+----------------------------------------------------------------
