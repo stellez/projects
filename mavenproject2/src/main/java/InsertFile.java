@@ -75,6 +75,7 @@ public class InsertFile extends HttpServlet {
         documentsNode = null; 
         othersNode = null;
     }
+    
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
