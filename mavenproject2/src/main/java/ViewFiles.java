@@ -177,7 +177,7 @@ public class ViewFiles extends HttpServlet{
             String result, name;
             name = "";
             result = "<form method=\"POST\" action=\"ViewFiles\"><select name=\"dropdown\" onchange=this.form.submit()>";
-            result = result + "<option value=\"null\"> </option>";
+            result = result + "<option selected=\"selected\" disabled=\"disabled\">Select a picture</option>";
             Property aux;
             PropertyIterator auxiliar1 = n.getProperties();
             if(auxiliar1.hasNext()){
