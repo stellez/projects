@@ -113,7 +113,7 @@ public class ViewFiles extends HttpServlet{
                     Logger.getLogger(ViewFiles.class.getName()).log(Level.SEVERE, null, "Error: request is null");
                 }
             }else{
-                out.println("center> <h1>Error couldn't connect to repository </h1></center>");
+                out.println("<center> <h1>Error couldn't connect to repository </h1></center>");
             }
                out.println("</body>");
                out.println("</html>");
