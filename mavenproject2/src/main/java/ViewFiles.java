@@ -118,13 +118,20 @@ public class ViewFiles extends HttpServlet{
                out.println("</body>");
                out.println("</html>");
                out.close();
-               this.disconnectRepository();
+               if(!this.disconnectRepository()){
+                   System.err.println("Error: could not log");
+               }
            }else{
                Logger.getLogger(ViewFiles.class.getName()).log(Level.SEVERE, null, "Error: response is null");
            }
        
     }
     
+    /**
+     * Make a connection to a remote repository.
+     * 
+     * @return true if the connection was successful, false otherwise
+     */
     public boolean connectRepository(){
         try{
             url = "http://localhost:8080/rmi";
@@ -142,6 +149,11 @@ public class ViewFiles extends HttpServlet{
         }
     }
     
+    /**
+     * Save and close the current session.
+     * 
+     * @return true if session was close, false otherwise
+     */
     public boolean disconnectRepository(){
          try {         
             jcrSession.save();
