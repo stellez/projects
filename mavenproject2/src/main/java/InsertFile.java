@@ -53,8 +53,7 @@ import org.apache.jackrabbit.commons.JcrUtils;
 public class InsertFile extends HttpServlet {
     
     private final static Logger LOGGER = 
-            Logger.getLogger(InsertFile.class.getCanonicalName());
-      
+            Logger.getLogger(InsertFile.class.getCanonicalName());      
     private String url;
     private Repository repository;
     private Session jcrSession;
@@ -86,41 +85,33 @@ public class InsertFile extends HttpServlet {
      * @throws IOException if don't found the file, or any I/O error occurs
      * @throws RepositoryException if occurs any exception on the repository
      */
+    @SuppressWarnings("empty-statement")
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, RepositoryException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        final Part filePart = request.getPart("file1");
-        final String fileName = getFileName(filePart);
-        
+            throws ServletException, IOException, RepositoryException {   
         InputStream filecontent = null;
         FileOutputStream fos = null;
         
-        try {
-            /* TODO output your page here. You may use following sample code. */
-            filecontent = filePart.getInputStream();
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<body>");
-            if(filecontent.available() > 0){
-                insert(filecontent, fileName);                         
-                out.println("<h1> Succes Insert File </h1>");
-                
-            }else {        
-                out.println("<h1> Field Image is empty </h1>");
-            }
-            out.println("<form action= \"http://localhost:8084/mavenproject2/index.jsp\"><input type=\"submit\" value=\"Home\"></form>");
-            out.println("</body>");
-            out.println("</html>");
-          
-        }finally {
-            //out.close();
-            if (filecontent != null)
-                filecontent.close();
-            jcrSession.save();
-            jcrSession.logout();
-                  
+        if(request != null){
+            final Part filePart = request.getPart("file1");
+            if(response != null){
+                response.setContentType("text/html;charset=UTF-8");
+                PrintWriter out = response.getWriter();          
+                final String fileName = getFileName(filePart);
+                filecontent = filePart.getInputStream();
+                out.println("<!DOCTYPE html>");
+                out.println("<html>");
+                out.println("<head>");
+                out.println("<body>");
+                out.println("<h1>" + insert(filecontent, fileName) + "</h1>");
+                out.println("<form action= \"http://localhost:8084/mavenproject2/index.jsp\"><input type=\"submit\" value=\"Home\"></form>");
+                out.println("</body>");
+                out.println("</html>"); 
+                out.close();
+                }else{
+                    Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, "Error: response is null");
+                }
+        }else{
+            Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, "Error: request is null");
         }
     }
 
@@ -135,35 +126,12 @@ public class InsertFile extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
         try {
-            processRequest(request, response);
-        } catch (IOException ex) {
-            Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, ex);
+            processRequest(request, response);              
         } catch (RepositoryException ex) {
             Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ServletException ex) {
-            Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, ex);
         }
-        // Set response content type
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        String title ="Using GET Method to Read Form Data";
-        String docType =
-        "<!doctype html public \"-//w3c//dtd html 4.0 "+
-        "transitional//en\">\n";
-        out.println(docType +
-        "<html>\n"+
-        "<head><title>"+ title +"</title></head>\n"+
-        "<body bgcolor=\"#f0f0f0\">\n"+
-        "<h1 align=\"center\">"+ title +"</h1>\n"+
-        "<ul>\n"+ 
-        " <li><b>First Name</b>: " 
-        + request.getParameter("first_name")+"\n"+
-        " <li><b>Last Name</b>: "
-        + request.getParameter("last_name")+"\n"+
-        "</ul>\n"+
-        "</body></html>");       
     }
 
     /**
@@ -172,75 +140,79 @@ public class InsertFile extends HttpServlet {
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
+        throws ServletException, IOException{
+        try {        
             processRequest(request, response);
-            //doGet(request, response);
-        } catch (IOException ex) {
-            Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RepositoryException ex) {
             Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ServletException ex) {
-            Logger.getLogger(InsertFile.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
     
     /**
      * Make a connection with Jackrabbit remote repository and check what exists the correct nodes for the workspace
-     * and insert the file into repository.
+     * if connection success insert the file into repository.
      * 
      * @param is inputStream associated with the entry file
      * @param fn the name of the file with the extension
-     * @throws ServletException If any error occurs 
-     * @throws RepositoryException If couldn't connect with the repository
+     * @return string of statement insert operation
      * @see InputStream
      * @see String
      */
-    public void insert(InputStream is, String fn) throws ServletException, RepositoryException{
+    public String insert(InputStream is, String fn){
         System.out.println("Connecting to repository...");
+        String ret_statement;
         url = "http://localhost:8080/rmi";
-        repository = JcrUtils.getRepository(url);
-        jcrSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()) , "default");
-        Node root = jcrSession.getRootNode();
-        if(!root.hasNode("storefiles")){
-            appNode = root.addNode("storefiles");
-            if(!appNode.hasNode("storefiles/images")){
-                imagesNode = appNode.addNode("images");              
-            }
-            if(!appNode.hasNode("storefiles/music")){
-                musicNode = appNode.addNode("music");               
-            }
-            if(!appNode.hasNode("storefiles/documents")){
-                documentsNode = appNode.addNode("documents");                
-            }
-            if(!appNode.hasNode("storefiles/others")){
-                othersNode = appNode.addNode("others");              
-            }
-        }else{
-            appNode = root.getNode("storefiles");
-            imagesNode = root.getNode("storefiles/images");
-            musicNode = root.getNode("storefiles/music");
-            documentsNode = root.getNode("storefiles/documents");
-            othersNode = root.getNode("storefiles/others");
-        }
         String extencion = null;
         if(!fn.isEmpty()){
-            extencion = fn.substring(fn.indexOf("."),fn.length());
-            System.out.println("The extension of the file is:" + extencion);
-            if(extencion.equals(".png") || extencion.equals(".jpeg") || extencion.equals(".jpg")){
-                imagesNode.setProperty(fn,is);
-            }else if(extencion.equals(".txt") || extencion.equals(".pdf") || extencion.equals(".docx")){
-                documentsNode.setProperty(fn, is);
-            }else if(extencion.equals(".mp3")){
-                musicNode.setProperty(fn, is);
+            try{
+                repository = JcrUtils.getRepository(url);
+                jcrSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()) , "default");
+                Node root = jcrSession.getRootNode();
+                if(!root.hasNode("storefiles")){
+                    appNode = root.addNode("storefiles");
+                    if(!appNode.hasNode("storefiles/images")){
+                        imagesNode = appNode.addNode("images");              
+                    }
+                    if(!appNode.hasNode("storefiles/music")){
+                        musicNode = appNode.addNode("music");               
+                    }
+                    if(!appNode.hasNode("storefiles/documents")){
+                        documentsNode = appNode.addNode("documents");                
+                    }
+                    if(!appNode.hasNode("storefiles/others")){
+                        othersNode = appNode.addNode("others");              
+                    }
+                }else{
+                    appNode = root.getNode("storefiles");
+                    imagesNode = root.getNode("storefiles/images");
+                    musicNode = root.getNode("storefiles/music");
+                    documentsNode = root.getNode("storefiles/documents");
+                    othersNode = root.getNode("storefiles/others");
+                }
+                    extencion = fn.substring(fn.indexOf("."),fn.length());
+                    if(extencion.equals(".png") || extencion.equals(".jpeg") || extencion.equals(".jpg")){
+                        imagesNode.setProperty(fn,is);
+                    }else if(extencion.equals(".txt") || extencion.equals(".pdf") || extencion.equals(".docx")){
+                        documentsNode.setProperty(fn, is);
+                    }else if(extencion.equals(".mp3")){
+                        musicNode.setProperty(fn, is);
+                    }
+                    jcrSession.save();
+                    jcrSession.logout();
+                    return "Succes! file insert";
+                 
+            } catch(RepositoryException re){
+                System.err.println("Error: unable connect to repository");
+                return "Error: unable connect to repository";
             }
         }else {
-            System.out.println("String vacio");
-        }    
+            System.err.println("Error: Don't insert any file");
+            return "Error: Don't insert any file";
+        }  
     }
     
     /**

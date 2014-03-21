@@ -81,9 +81,52 @@ public class ViewFiles extends HttpServlet{
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, RepositoryException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        try {
+        
+        if(response != null){
+            response.setContentType("text/html;charset=UTF-8");
+            PrintWriter out = response.getWriter();
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ViewFiles</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<center> <h1>Images</h1></center> "); 
+            out.println("<center> <form action= \"http://localhost:8084/mavenproject2/index.jsp\"><input type=\"submit\" value=\"Home\"></form></center> ");           
+            if(this.connectRepository()){
+                out.println("<center>" + this.listFiles(imagesNode) + "</center>" );
+                if(request != null){
+                        String filePart = "";              
+                        filePart = request.getParameter("dropdown");
+                        if(filePart != null){
+                            if(!filePart.isEmpty()){
+                                InputStream in = searchBufferImage(imagesNode, filePart);
+                                int size = in.available();
+                                byte[] content = new byte[size];  
+                                in.read(content);  
+                                byte[] encoded = Base64.encodeBase64(content);
+                                String encodedString = new String(encoded);                      
+                                out.println("<center> <br><img src=\"data:image/jpeg;base64,"+ encodedString +"\" style='max-width: 300px; max-height: 300px' WIDTH=20% HEIGHT=20% /></center> ");
+                            }
+                        }
+                }else{
+                    Logger.getLogger(ViewFiles.class.getName()).log(Level.SEVERE, null, "Error: request is null");
+                }
+            }else{
+                out.println("center> <h1>Error couldn't connect to repository </h1></center>");
+            }
+               out.println("</body>");
+               out.println("</html>");
+               out.close();
+               this.disconnectRepository();
+           }else{
+               Logger.getLogger(ViewFiles.class.getName()).log(Level.SEVERE, null, "Error: response is null");
+           }
+       
+    }
+    
+    public boolean connectRepository(){
+        try{
             url = "http://localhost:8080/rmi";
             repository = JcrUtils.getRepository(url);
             jcrSession = repository.login(new SimpleCredentials("admin", "admin".toCharArray()) , "default");
@@ -93,41 +136,19 @@ public class ViewFiles extends HttpServlet{
             musicNode = root.getNode("storefiles/music");
             documentsNode = root.getNode("storefiles/documents");
             othersNode = root.getNode("storefiles/others");
-            
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ViewFiles</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<center> <h1>Images</h1></center> "); 
-            out.println("<center> <form action= \"http://localhost:8084/mavenproject2/index.jsp\"><input type=\"submit\" value=\"Home\"></form></center> ");           
-            out.println("<center>" + this.listFiles(imagesNode) + "</center>" );
-            
-            String filePart = "";
-            try{
-                filePart = request.getParameter("dropdown");
-                if(!filePart.isEmpty()){
-                    InputStream in = searchBufferImage(imagesNode, filePart);
-                    int size = in.available();
-                    byte[] content = new byte[size];  
-                    in.read(content);  
-                    byte[] encoded = Base64.encodeBase64(content);
-                    String encodedString = new String(encoded);                      
-                    out.println("<center> <br><img src=\"data:image/jpeg;base64,"+ encodedString +"\" style='max-width: 300px; max-height: 300px' WIDTH=20% HEIGHT=20% /></center> ");
-                }
-            }catch(IOException e){
-                System.out.println("Exception: "+ e);
-            } catch (RepositoryException e) {
-                System.out.println("Exception: "+ e);
-            }           
-            out.println("</body>");
-            out.println("</html>");
-        } finally {
-            out.close();
+            return true;
+        }catch(RepositoryException re){
+            return false;
+        }
+    }
+    
+    public boolean disconnectRepository(){
+         try {         
             jcrSession.save();
             jcrSession.logout();
+            return true;    
+        }catch(RepositoryException re){
+            return false;
         }
     }
     
@@ -140,22 +161,30 @@ public class ViewFiles extends HttpServlet{
      * @throws IOException if an I/O error occurs
      */
     public String listFiles(Node n) throws RepositoryException, IOException{
-        String result, name;
-        name = "";
-        result = "<form method=\"POST\" action=\"ViewFiles\"><select name=\"dropdown\" onchange=this.form.submit()>";
-        result = result + "<option value=\"null\"> </option>";
-        Property aux;
-        PropertyIterator auxiliar1 = n.getProperties();
-        if(auxiliar1.hasNext()){
-            while(auxiliar1.getPosition() < auxiliar1.getSize()){
-                aux = auxiliar1.nextProperty();
-                name = aux.getName();
-                if(!name.equals("jcr:primaryType"))
-                    result = result + "<option value=\"" + name + "\">" + name.substring(0,name.indexOf(".")) + "</option>"; 
+        if(n != null){
+            String result, name;
+            name = "";
+            result = "<form method=\"POST\" action=\"ViewFiles\"><select name=\"dropdown\" onchange=this.form.submit()>";
+            result = result + "<option value=\"null\"> </option>";
+            Property aux;
+            PropertyIterator auxiliar1 = n.getProperties();
+            if(auxiliar1.hasNext()){
+                while(auxiliar1.getPosition() < auxiliar1.getSize()){
+                    aux = auxiliar1.nextProperty();
+                    name = aux.getName();
+                    if(!name.equals("jcr:primaryType"))
+                        result = result + "<option value=\"" + name + "\">" + name.substring(0,name.indexOf(".")) + "</option>"; 
+                }
             }
+            result = result + "</select></form>";
+            return result;
+        }else{
+            return "<form method=\"POST\" action=\"ViewFiles\">"
+                    + "<select name=\"dropdown\" onchange=this.form.submit()> "
+                    + "<option value=\"null\"> </option>"
+                    + "</select>"
+                    + "</form>";
         }
-        result = result + "</select></form>";
-        return result;
     }
     
     /**
